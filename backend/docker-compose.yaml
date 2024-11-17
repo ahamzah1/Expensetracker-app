@@ -1,0 +1,29 @@
+services:
+  backend:
+    image: expenses-backend:latest
+    build: .
+    environment:
+      - POSTGRES_HOST=db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=example
+      - POSTGRES_DATABASE=expenses
+    ports:
+      - 127.0.0.1:8000:8000
+    depends_on:
+      - db
+  db:
+    image: postgres:13.2-alpine
+    restart: unless-stopped
+    container_name: db
+    environment:
+      POSTGRES_PASSWORD: example
+      POSTGRES_DB: expenses
+    volumes:
+      - ./database:/var/lib/postgresql/database
+  adminer:
+    image: adminer:4
+    restart: always
+    environment:
+      - ADMINER_DESIGN=galkaev
+    ports:
+      - 127.0.0.1:8080:8080
