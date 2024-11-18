@@ -6,28 +6,37 @@ const Dashboard = () => {
   const [newExpense, setNewExpense] = useState({ name: "", amount: "", date: "" });
   const [isEditing, setIsEditing] = useState(false);
   const [currentExpense, setCurrentExpense] = useState(null);
+  const [error, setError] = useState("");
 
-  const API_URL = "http://localhost:8000/api/expenses"; // Adjust if backend runs on a different address
+  const API_URL = "http://localhost:8000/api/expenses"; // Update as per your backend
+  const token = sessionStorage.getItem("token"); // Fetch the token from session storage
+
+  // Axios instance with authorization header
+  const axiosInstance = axios.create({
+    baseURL: API_URL,
+    headers: { Authorization: `Bearer ${token}` },
+  });
 
   // Fetch expenses from the backend
   useEffect(() => {
     const fetchExpenses = async () => {
       try {
-        const response = await axios.get(API_URL);
+        const response = await axiosInstance.get("/");
         setExpenses(response.data);
       } catch (error) {
+        setError("Error fetching expenses. Please log in again.");
         console.error("Error fetching expenses:", error);
       }
     };
 
     fetchExpenses();
-  }, []);
+  }, [axiosInstance]);
 
   // Add a new expense
   const handleAddExpense = async () => {
     if (newExpense.name && newExpense.amount && newExpense.date) {
       try {
-        const response = await axios.post(API_URL, {
+        const response = await axiosInstance.post("/", {
           description: newExpense.name,
           amount: parseFloat(newExpense.amount),
           date: newExpense.date,
@@ -35,6 +44,7 @@ const Dashboard = () => {
         setExpenses([...expenses, response.data]);
         setNewExpense({ name: "", amount: "", date: "" });
       } catch (error) {
+        setError("Error adding expense. Please try again.");
         console.error("Error adding expense:", error);
       }
     }
@@ -54,7 +64,7 @@ const Dashboard = () => {
   const handleUpdateExpense = async () => {
     if (currentExpense && newExpense.name && newExpense.amount && newExpense.date) {
       try {
-        const response = await axios.post(`${API_URL}/${currentExpense.id}`, {
+        const response = await axiosInstance.put(`/${currentExpense.id}`, {
           description: newExpense.name,
           amount: parseFloat(newExpense.amount),
           date: newExpense.date,
@@ -68,6 +78,7 @@ const Dashboard = () => {
         setNewExpense({ name: "", amount: "", date: "" });
         setCurrentExpense(null);
       } catch (error) {
+        setError("Error updating expense. Please try again.");
         console.error("Error updating expense:", error);
       }
     }
@@ -76,9 +87,10 @@ const Dashboard = () => {
   // Delete an expense
   const handleDeleteExpense = async (id) => {
     try {
-      await axios.delete(`${API_URL}/${id}`);
+      await axiosInstance.delete(`/${id}`);
       setExpenses(expenses.filter((expense) => expense.id !== id));
     } catch (error) {
+      setError("Error deleting expense. Please try again.");
       console.error("Error deleting expense:", error);
     }
   };
@@ -87,6 +99,7 @@ const Dashboard = () => {
     <div style={{ padding: "20px" }}>
       <h1>Dashboard</h1>
       <p>Manage your expenses below.</p>
+      {error && <p style={{ color: "red" }}>{error}</p>}
 
       {/* List of Expenses */}
       <h2>Expenses</h2>
