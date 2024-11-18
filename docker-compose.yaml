@@ -1,0 +1,45 @@
+services:
+  frontend:
+    image: expenses-frontend:latest
+    build: ./frontend/.
+
+  backend:
+    image: expenses-backend:latest
+    build: ./backend/.
+    environment:
+      - POSTGRES_HOST=db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=example
+      - POSTGRES_DATABASE=expenses
+      - JWT_KEY=fc2b54f7c00d0dfb20282e3e51e835d404e9b2bccc0887c9f666fcb0e0a6adad4ead0f531c4bb2e05c25e2d5b87cfbf6d368392fd225ff6e9d7292f268b79bbe
+    depends_on:
+      - db
+  db:
+    image: postgres:13.2-alpine
+    restart: unless-stopped
+    container_name: db
+    environment:
+      POSTGRES_PASSWORD: example
+      POSTGRES_DB: expenses
+    volumes:
+      - database_expenses:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+  adminer:
+    image: adminer:4
+    restart: always
+    environment:
+      - ADMINER_DESIGN=galkaev
+    ports:
+      - 127.0.0.1:8080:8080
+  nginx: 
+    image: nginx:alpine
+    ports:
+      - 127.0.0.1:80:80
+    volumes:
+      - ./nginx.config:/etc/nginx/nginx.conf
+    depends_on:
+      - frontend
+      - backend
+    container_name: nginx
+volumes:
+  database_expenses:

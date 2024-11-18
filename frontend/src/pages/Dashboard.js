@@ -8,7 +8,7 @@ const Dashboard = () => {
   const [currentExpense, setCurrentExpense] = useState(null);
   const [error, setError] = useState("");
 
-  const API_URL = "http://localhost:8000/api/expenses"; // Update as per your backend
+  const API_URL = `${process.env.REACT_APP_BACKEND}/expenses`
   const token = sessionStorage.getItem("token"); // Fetch the token from session storage
 
   // Axios instance with authorization header

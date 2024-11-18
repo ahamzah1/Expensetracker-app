@@ -69,7 +69,7 @@ const app = express();
 app.use(express.json());
 
 app.use(cors({
-    origin: 'http://localhost:3000', // Allow only your React app
+    origin: process.env.REQUEST_ORIGIN, // Allow only your React app
   }));
 
 // Test database connection

@@ -8,7 +8,7 @@ const User = () => {
   const [error, setError] = useState(""); // Error message state
 
   // Backend API URL
-  const API_URL = "http://localhost:8000/api"; // Change to your backend's URL
+  const API_URL = process.env.REACT_APP_BACKEND;
 
   // Check session on load
   useEffect(() => {
