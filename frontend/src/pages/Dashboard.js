@@ -1,22 +1,42 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
 const Dashboard = () => {
-  const [expenses, setExpenses] = useState([
-    { id: 1, name: "Groceries", amount: 50 },
-    { id: 2, name: "Utilities", amount: 75 },
-  ]); // Initial list of expenses
-  const [newExpense, setNewExpense] = useState({ name: "", amount: "" });
+  const [expenses, setExpenses] = useState([]);
+  const [newExpense, setNewExpense] = useState({ name: "", amount: "", date: "" });
   const [isEditing, setIsEditing] = useState(false);
   const [currentExpense, setCurrentExpense] = useState(null);
 
+  const API_URL = "http://localhost:8000/api/expenses"; // Adjust if backend runs on a different address
+
+  // Fetch expenses from the backend
+  useEffect(() => {
+    const fetchExpenses = async () => {
+      try {
+        const response = await axios.get(API_URL);
+        setExpenses(response.data);
+      } catch (error) {
+        console.error("Error fetching expenses:", error);
+      }
+    };
+
+    fetchExpenses();
+  }, []);
+
   // Add a new expense
-  const handleAddExpense = () => {
-    if (newExpense.name && newExpense.amount) {
-      setExpenses([
-        ...expenses,
-        { id: Date.now(), name: newExpense.name, amount: parseFloat(newExpense.amount) },
-      ]);
-      setNewExpense({ name: "", amount: "" });
+  const handleAddExpense = async () => {
+    if (newExpense.name && newExpense.amount && newExpense.date) {
+      try {
+        const response = await axios.post(API_URL, {
+          description: newExpense.name,
+          amount: parseFloat(newExpense.amount),
+          date: newExpense.date,
+        });
+        setExpenses([...expenses, response.data]);
+        setNewExpense({ name: "", amount: "", date: "" });
+      } catch (error) {
+        console.error("Error adding expense:", error);
+      }
     }
   };
 
@@ -24,25 +44,43 @@ const Dashboard = () => {
   const handleEditExpense = (expense) => {
     setIsEditing(true);
     setCurrentExpense(expense);
-    setNewExpense({ name: expense.name, amount: expense.amount });
+    setNewExpense({
+      name: expense.description,
+      amount: expense.amount,
+      date: expense.date,
+    });
   };
 
-  const handleUpdateExpense = () => {
-    setExpenses(
-      expenses.map((expense) =>
-        expense.id === currentExpense.id
-          ? { ...expense, name: newExpense.name, amount: parseFloat(newExpense.amount) }
-          : expense
-      )
-    );
-    setIsEditing(false);
-    setNewExpense({ name: "", amount: "" });
-    setCurrentExpense(null);
+  const handleUpdateExpense = async () => {
+    if (currentExpense && newExpense.name && newExpense.amount && newExpense.date) {
+      try {
+        const response = await axios.post(`${API_URL}/${currentExpense.id}`, {
+          description: newExpense.name,
+          amount: parseFloat(newExpense.amount),
+          date: newExpense.date,
+        });
+        setExpenses(
+          expenses.map((expense) =>
+            expense.id === currentExpense.id ? response.data : expense
+          )
+        );
+        setIsEditing(false);
+        setNewExpense({ name: "", amount: "", date: "" });
+        setCurrentExpense(null);
+      } catch (error) {
+        console.error("Error updating expense:", error);
+      }
+    }
   };
 
   // Delete an expense
-  const handleDeleteExpense = (id) => {
-    setExpenses(expenses.filter((expense) => expense.id !== id));
+  const handleDeleteExpense = async (id) => {
+    try {
+      await axios.delete(`${API_URL}/${id}`);
+      setExpenses(expenses.filter((expense) => expense.id !== id));
+    } catch (error) {
+      console.error("Error deleting expense:", error);
+    }
   };
 
   return (
@@ -55,7 +93,8 @@ const Dashboard = () => {
       <ul>
         {expenses.map((expense) => (
           <li key={expense.id} style={{ marginBottom: "10px" }}>
-            <strong>{expense.name}</strong>: ${expense.amount.toFixed(2)}
+            <strong>{expense.description}</strong>: $
+            {Number(expense.amount).toFixed(2)} on {expense.date}
             <button onClick={() => handleEditExpense(expense)} style={{ marginLeft: "10px" }}>
               Edit
             </button>
@@ -86,6 +125,13 @@ const Dashboard = () => {
           placeholder="Amount"
           value={newExpense.amount}
           onChange={(e) => setNewExpense({ ...newExpense, amount: e.target.value })}
+          required
+          style={{ marginLeft: "5px" }}
+        />
+        <input
+          type="date"
+          value={newExpense.date}
+          onChange={(e) => setNewExpense({ ...newExpense, date: e.target.value })}
           required
           style={{ marginLeft: "5px" }}
         />

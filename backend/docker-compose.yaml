@@ -19,7 +19,8 @@ services:
       POSTGRES_PASSWORD: example
       POSTGRES_DB: expenses
     volumes:
-      - ./database:/var/lib/postgresql/database
+      - database_expenses:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
   adminer:
     image: adminer:4
     restart: always
@@ -27,3 +28,6 @@ services:
       - ADMINER_DESIGN=galkaev
     ports:
       - 127.0.0.1:8080:8080
+
+volumes:
+  database_expenses:

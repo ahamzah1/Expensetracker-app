@@ -1,6 +1,7 @@
 const express = require('express');
 const { Pool } = require('pg');
 require('dotenv').config(); // Optional if using environment variables directly in Docker Compose
+const cors = require('cors');
 
 // Default values for environment variables
 const POSTGRES_HOST = process.env.POSTGRES_HOST || '';
@@ -64,6 +65,10 @@ initializePostgresClient();
 const app = express();
 app.use(express.json());
 
+app.use(cors({
+    origin: 'http://localhost:3000', // Allow only your React app
+  }));
+
 // Test database connection
 pool.connect((err) => {
   if (err) {
@@ -76,7 +81,7 @@ pool.connect((err) => {
 // Routes
 app.get('/api/expenses', async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM expenses');
+    const result = await pool.query('SELECT id, description, CAST(amount AS FLOAT) AS amount, date FROM expenses');
     res.status(200).json(result.rows);
   } catch (error) {
     console.error(error);
