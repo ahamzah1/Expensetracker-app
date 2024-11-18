@@ -1,10 +1,10 @@
 services:
   frontend:
-    image: expenses-frontend:latest
+    image: ahamzahhh/expenses-frontend:latest
     build: ./frontend/.
 
   backend:
-    image: expenses-backend:latest
+    image: ahamzahhh/expenses-backend:latest
     build: ./backend/.
     environment:
       - POSTGRES_HOST=db
