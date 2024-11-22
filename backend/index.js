@@ -1,6 +1,6 @@
 const express = require('express');
 const { Pool } = require('pg');
-require('dotenv').config(); // Optional if using environment variables directly in Docker Compose
+require('dotenv').config();
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -14,24 +14,14 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your_secret_key';
 
 // Check if POSTGRES_HOST is provided
 if (!POSTGRES_HOST) {
-  console.error(
-    '[Error] POSTGRES_HOST environment variable is not set. Exiting.'
-  );
+  console.error('[Error] POSTGRES_HOST environment variable is not set. Exiting.');
   process.exit(1);
 }
 
 const POSTGRES_PORT = 5432;
 const POSTGRES_ADDR = `${POSTGRES_HOST}:${POSTGRES_PORT}`;
 
-console.log(`[Initialization] Configuring PostgreSQL connection with:
-  POSTGRES_HOST:      ${POSTGRES_HOST}
-  POSTGRES_USER:      ${POSTGRES_USER}
-  POSTGRES_PASSWORD:  ${POSTGRES_PASSWORD}
-  POSTGRES_DATABASE:  ${POSTGRES_DATABASE}
-  POSTGRES_PORT:      ${POSTGRES_PORT}
-`);
-
-// Create the PostgreSQL client
+// PostgreSQL pool setup
 const pool = new Pool({
   host: POSTGRES_HOST,
   user: POSTGRES_USER,
@@ -40,9 +30,8 @@ const pool = new Pool({
   port: POSTGRES_PORT,
 });
 
-// Function to initialize PostgreSQL connection with retries
+// Initialize PostgreSQL connection
 const initializePostgresClient = async () => {
-  console.log(`[Initialization] Attempting to connect to PostgreSQL at ${POSTGRES_ADDR}`);
   for (let attempt = 1; attempt <= 10; attempt++) {
     try {
       const client = await pool.connect();
@@ -50,50 +39,36 @@ const initializePostgresClient = async () => {
       client.release();
       return true;
     } catch (err) {
-      console.error(`[Initialization] Attempt ${attempt}: Failed to connect to PostgreSQL. Retrying in 5 seconds...`);
+      console.error(`[Initialization] Attempt ${attempt}: Failed to connect. Retrying in 5 seconds...`);
       if (attempt === 10) {
-        console.error('[Initialization] Exhausted all retry attempts. Exiting...');
-        console.error(err);
+        console.error('[Initialization] Exhausted retries. Exiting...');
         process.exit(1);
       }
       await new Promise((resolve) => setTimeout(resolve, 5000));
     }
   }
 };
-
-// Initialize the database connection
 initializePostgresClient();
 
 // Initialize Express
 const app = express();
 app.use(express.json());
+app.use(cors({ origin: process.env.REQUEST_ORIGIN }));
 
-app.use(cors({
-    origin: process.env.REQUEST_ORIGIN, // Allow only your React app
-  }));
-
-// Test database connection
-pool.connect((err) => {
-  if (err) {
-    console.error('Failed to connect to the database:', err);
-  } else {
-    console.log('Connected to the PostgreSQL database.');
-  }
-});
-
-// Utility function: Authenticate JWT
+// Utility: Authenticate JWT
 const authenticateToken = (req, res, next) => {
   const token = req.headers['authorization']?.split(' ')[1];
   if (!token) return res.status(401).json({ error: 'Unauthorized' });
 
   jwt.verify(token, JWT_SECRET, (err, user) => {
     if (err) return res.status(403).json({ error: 'Forbidden' });
-    req.user = user; // Attach user info to the request
+    req.user = user;
     next();
   });
 };
 
-// Signup endpoint
+// --- User Endpoints ---
+
 app.post('/api/signup', async (req, res) => {
   const { username, password } = req.body;
   try {
@@ -109,7 +84,6 @@ app.post('/api/signup', async (req, res) => {
   }
 });
 
-// Login endpoint
 app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
   try {
@@ -118,7 +92,6 @@ app.post('/api/login', async (req, res) => {
     if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({ error: 'Invalid username or password' });
     }
-
     const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '1h' });
     res.status(200).json({ token });
   } catch (error) {
@@ -127,11 +100,12 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-// Get user-specific expenses
+// --- Expenses Endpoints ---
+
 app.get('/api/expenses', authenticateToken, async (req, res) => {
   try {
     const result = await pool.query(
-      'SELECT id, description, amount, date FROM expenses WHERE user_id = $1',
+      'SELECT id, description, amount, date, category_id FROM expenses WHERE user_id = $1',
       [req.user.id]
     );
     res.status(200).json(result.rows);
@@ -141,13 +115,12 @@ app.get('/api/expenses', authenticateToken, async (req, res) => {
   }
 });
 
-// Add a new expense for the logged-in user
 app.post('/api/expenses', authenticateToken, async (req, res) => {
-  const { description, amount, date } = req.body;
+  const { description, amount, date, category_id } = req.body;
   try {
     const result = await pool.query(
-      'INSERT INTO expenses (user_id, description, amount, date) VALUES ($1, $2, $3, $4) RETURNING *',
-      [req.user.id, description, amount, date]
+      'INSERT INTO expenses (user_id, description, amount, date, category_id) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+      [req.user.id, description, amount, date, category_id]
     );
     res.status(201).json(result.rows[0]);
   } catch (error) {
@@ -156,7 +129,6 @@ app.post('/api/expenses', authenticateToken, async (req, res) => {
   }
 });
 
-// Delete an expense for the logged-in user
 app.delete('/api/expenses/:id', authenticateToken, async (req, res) => {
   const { id } = req.params;
   try {
