@@ -19,6 +19,7 @@ const Dashboard = () => {
   const [newExpense, setNewExpense] = useState({ name: "", amount: "", date: "", category: "" });
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [showModal, setShowModal] = useState(false); // State to control modal visibility
 
   const API_URL = `${process.env.REACT_APP_BACKEND}/expenses`;
   const token = sessionStorage.getItem("token");
@@ -70,6 +71,7 @@ const Dashboard = () => {
         );
         setExpenses([...expenses, response.data]);
         setNewExpense({ name: "", amount: "", date: "", category: "" });
+        setShowModal(false); // Close modal after adding expense
       } catch (error) {
         setError(error.response?.data?.message || "Error adding expense. Please try again.");
       }
@@ -120,7 +122,6 @@ const Dashboard = () => {
       },
     ],
   };
-  
 
   return (
     <div style={{ padding: "20px", maxWidth: "800px", margin: "0 auto", fontFamily: "Arial, sans-serif" }}>
@@ -169,44 +170,87 @@ const Dashboard = () => {
         ))}
       </ul>
 
-      {/* Add Expense Form */}
-      <h2>Add Expense</h2>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleAddExpense();
+      {/* Add Expense Button */}
+      <button
+        style={{
+          position: "fixed",
+          bottom: "20px",
+          right: "20px",
+          borderRadius: "50%",
+          backgroundColor: "#4CAF50",
+          color: "white",
+          fontSize: "20px",
+          width: "50px",
+          height: "50px",
+          border: "none",
         }}
+        onClick={() => setShowModal(true)}
       >
-        <input
-          type="text"
-          placeholder="Description"
-          value={newExpense.name}
-          onChange={(e) => setNewExpense({ ...newExpense, name: e.target.value })}
-        />
-        <input
-          type="number"
-          placeholder="Amount"
-          value={newExpense.amount}
-          onChange={(e) => setNewExpense({ ...newExpense, amount: e.target.value })}
-        />
-        <input
-          type="date"
-          value={newExpense.date}
-          onChange={(e) => setNewExpense({ ...newExpense, date: e.target.value })}
-        />
-        <select
-          value={newExpense.category}
-          onChange={(e) => setNewExpense({ ...newExpense, category: e.target.value })}
+        +
+      </button>
+
+      {/* Modal */}
+      {showModal && (
+        <div
+          style={{
+            position: "fixed",
+            top: "0",
+            left: "0",
+            width: "100%",
+            height: "100%",
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
         >
-          <option value="">Select Category</option>
-          {Object.keys(categoryMapping).map((category) => (
-            <option key={category} value={category}>
-              {category}
-            </option>
-          ))}
-        </select>
-        <button type="submit">Add Expense</button>
-      </form>
+          <div
+            style={{
+              backgroundColor: "white",
+              padding: "20px",
+              borderRadius: "10px",
+              width: "400px",
+              textAlign: "center",
+            }}
+          >
+            <h2>Add Expense</h2>
+            <input
+              type="text"
+              placeholder="Description"
+              value={newExpense.name}
+              onChange={(e) => setNewExpense({ ...newExpense, name: e.target.value })}
+            />
+            <input
+              type="number"
+              placeholder="Amount"
+              value={newExpense.amount}
+              onChange={(e) => setNewExpense({ ...newExpense, amount: e.target.value })}
+            />
+            <input
+              type="date"
+              value={newExpense.date}
+              onChange={(e) => setNewExpense({ ...newExpense, date: e.target.value })}
+            />
+            <select
+              value={newExpense.category}
+              onChange={(e) => setNewExpense({ ...newExpense, category: e.target.value })}
+            >
+              <option value="">Select Category</option>
+              {Object.keys(categoryMapping).map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
+            </select>
+            <div style={{ marginTop: "10px" }}>
+              <button onClick={handleAddExpense} style={{ marginRight: "10px" }}>
+                Save
+              </button>
+              <button onClick={() => setShowModal(false)}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
