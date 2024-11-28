@@ -10,21 +10,26 @@ import {
   Legend,
 } from "chart.js";
 import { Bar } from "react-chartjs-2";
+import "../styles/Dashboard.css"; // External CSS file
 
-// Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const Dashboard = () => {
   const [expenses, setExpenses] = useState([]);
-  const [newExpense, setNewExpense] = useState({ name: "", amount: "", date: "", category: "" });
+  const [newExpense, setNewExpense] = useState({
+    name: "",
+    amount: "",
+    date: "",
+    category: "",
+    notification_period: "", 
+  });
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
-  const [showModal, setShowModal] = useState(false); // State to control modal visibility
+  const [showModal, setShowModal] = useState(false);
 
   const API_URL = `${process.env.REACT_APP_BACKEND}/expenses`;
   const token = sessionStorage.getItem("token");
 
-  // Fetch expenses
   useEffect(() => {
     const fetchExpenses = async () => {
       try {
@@ -47,10 +52,15 @@ const Dashboard = () => {
     Miscellaneous: 5,
   };
 
-  // Add Expense
   const handleAddExpense = async () => {
-    if (newExpense.name && newExpense.amount && newExpense.date && newExpense.category) {
-      const categoryID = categoryMapping[newExpense.category]; // Map category name to ID
+    if (
+      newExpense.name &&
+      newExpense.amount &&
+      newExpense.date &&
+      newExpense.category &&
+      newExpense.notification_period
+    ) {
+      const categoryID = categoryMapping[newExpense.category];
       if (!categoryID) {
         setError("Invalid category selected.");
         return;
@@ -63,15 +73,22 @@ const Dashboard = () => {
             description: newExpense.name,
             amount: parseFloat(newExpense.amount),
             date: newExpense.date,
-            category_id: categoryID, // Send the ID instead of the name
+            category_id: categoryID,
+            notification_period: parseFloat(newExpense.notification_period),
           },
           {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
         setExpenses([...expenses, response.data]);
-        setNewExpense({ name: "", amount: "", date: "", category: "" });
-        setShowModal(false); // Close modal after adding expense
+        setNewExpense({
+          name: "",
+          amount: "",
+          date: "",
+          category: "",
+          notification_period: "", // Reset to default
+        });
+        setShowModal(false);
       } catch (error) {
         setError(error.response?.data?.message || "Error adding expense. Please try again.");
       }
@@ -80,33 +97,29 @@ const Dashboard = () => {
     }
   };
 
-  // Delete Expense
-  const handleDeleteExpense = async (id) => {
-    try {
-      await axios.delete(`${API_URL}/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setExpenses(expenses.filter((expense) => expense.id !== id));
-    } catch (error) {
-      setError(error.response?.data?.message || "Error deleting expense. Please try again.");
-    }
-  };
-
-  // Filter expenses based on search term
+    // Delete Expense
+    const handleDeleteExpense = async (id) => {
+      try {
+        await axios.delete(`${API_URL}/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setExpenses(expenses.filter((expense) => expense.id !== id));
+      } catch (error) {
+        setError(error.response?.data?.message || "Error deleting expense. Please try again.");
+      }
+    };
   const filteredExpenses = expenses.filter((expense) =>
     expense.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Calculate total and monthly expenses
   const totalExpenses = expenses.reduce((acc, expense) => acc + (parseFloat(expense.amount) || 0), 0);
   const currentMonth = new Date().getMonth();
   const monthlyExpenses = expenses
     .filter((expense) => new Date(expense.date).getMonth() === currentMonth)
     .reduce((acc, expense) => acc + (parseFloat(expense.amount) || 0), 0);
 
-  // Chart data for category breakdown
   const chartData = {
-    labels: Object.keys(categoryMapping), // Display category names
+    labels: Object.keys(categoryMapping),
     datasets: [
       {
         label: "Expenses by Category",
@@ -128,13 +141,11 @@ const Dashboard = () => {
       <h1 style={{ textAlign: "center", color: "#4CAF50" }}>Expense Tracker Dashboard</h1>
       {error && <p style={{ color: "red", textAlign: "center" }}>{error}</p>}
 
-      {/* Summary */}
       <div style={{ textAlign: "center", marginBottom: "20px" }}>
         <h3>Total Expenses: ${totalExpenses.toFixed(2)}</h3>
         <h3>Monthly Expenses: ${monthlyExpenses.toFixed(2)}</h3>
       </div>
 
-      {/* Chart */}
       <h2>Expense Overview</h2>
       {expenses.length > 0 ? (
         <div style={{ width: "100%", height: "400px" }}>
@@ -144,7 +155,6 @@ const Dashboard = () => {
         <p>Loading chart...</p>
       )}
 
-      {/* Search */}
       <input
         type="text"
         placeholder="Search expenses"
@@ -159,7 +169,6 @@ const Dashboard = () => {
         }}
       />
 
-      {/* Expense List */}
       <h2>Expenses</h2>
       <ul style={{ listStyle: "none", padding: 0 }}>
         {filteredExpenses.map((expense) => (
@@ -170,11 +179,10 @@ const Dashboard = () => {
         ))}
       </ul>
 
-      {/* Add Expense Button */}
       <button
         style={{
-          position: "fixed",
-          bottom: "20px",
+          position: "absolute",
+          top: "70px",
           right: "20px",
           borderRadius: "50%",
           backgroundColor: "#4CAF50",
@@ -189,7 +197,6 @@ const Dashboard = () => {
         +
       </button>
 
-      {/* Modal */}
       {showModal && (
         <div
           style={{
@@ -202,38 +209,70 @@ const Dashboard = () => {
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
+            animation: "fadeIn 0.3s ease-in-out",
           }}
         >
           <div
             style={{
               backgroundColor: "white",
-              padding: "20px",
-              borderRadius: "10px",
+              padding: "30px",
+              borderRadius: "15px",
               width: "400px",
               textAlign: "center",
+              boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+              fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
             }}
           >
-            <h2>Add Expense</h2>
+            <h2 style={{ marginBottom: "20px", color: "#4CAF50" }}>Add Expense</h2>
             <input
               type="text"
               placeholder="Description"
               value={newExpense.name}
               onChange={(e) => setNewExpense({ ...newExpense, name: e.target.value })}
+              style={{
+                padding: "10px",
+                marginBottom: "10px",
+                width: "100%",
+                borderRadius: "5px",
+                border: "1px solid #ddd",
+              }}
             />
             <input
               type="number"
               placeholder="Amount"
               value={newExpense.amount}
               onChange={(e) => setNewExpense({ ...newExpense, amount: e.target.value })}
+              style={{
+                padding: "10px",
+                marginBottom: "10px",
+                width: "100%",
+                borderRadius: "5px",
+                border: "1px solid #ddd",
+              }}
             />
             <input
               type="date"
               value={newExpense.date}
               onChange={(e) => setNewExpense({ ...newExpense, date: e.target.value })}
+              style={{
+                padding: "10px",
+                marginBottom: "10px",
+                width: "100%",
+                borderRadius: "5px",
+                border: "1px solid #ddd",
+              }}
             />
             <select
               value={newExpense.category}
               onChange={(e) => setNewExpense({ ...newExpense, category: e.target.value })}
+              style={{
+                padding: "10px",
+                marginBottom: "10px",
+                width: "100%",
+                borderRadius: "5px",
+                border: "1px solid #ddd",
+                backgroundColor: "#f9f9f9",
+              }}
             >
               <option value="">Select Category</option>
               {Object.keys(categoryMapping).map((category) => (
@@ -242,11 +281,52 @@ const Dashboard = () => {
                 </option>
               ))}
             </select>
-            <div style={{ marginTop: "10px" }}>
-              <button onClick={handleAddExpense} style={{ marginRight: "10px" }}>
+            <input
+              type="number"
+              placeholder="Notification Period (days)"
+              value={newExpense.notification_period}
+              onChange={(e) => setNewExpense({ ...newExpense, notification_period: e.target.value })}
+              style={{
+                padding: "10px",
+                marginBottom: "20px",
+                width: "100%",
+                borderRadius: "5px",
+                border: "1px solid #ddd",
+              }}
+            />
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <button
+                onClick={handleAddExpense}
+                style={{
+                  padding: "10px 20px",
+                  borderRadius: "5px",
+                  backgroundColor: "#4CAF50",
+                  color: "white",
+                  border: "none",
+                  cursor: "pointer",
+                  transition: "background-color 0.3s",
+                }}
+                onMouseOver={(e) => (e.target.style.backgroundColor = "#45a049")}
+                onMouseOut={(e) => (e.target.style.backgroundColor = "#4CAF50")}
+              >
                 Save
               </button>
-              <button onClick={() => setShowModal(false)}>Cancel</button>
+              <button
+                onClick={() => setShowModal(false)}
+                style={{
+                  padding: "10px 20px",
+                  borderRadius: "5px",
+                  backgroundColor: "#f44336",
+                  color: "white",
+                  border: "none",
+                  cursor: "pointer",
+                  transition: "background-color 0.3s",
+                }}
+                onMouseOver={(e) => (e.target.style.backgroundColor = "#d32f2f")}
+                onMouseOut={(e) => (e.target.style.backgroundColor = "#f44336")}
+              >
+                Cancel
+              </button>
             </div>
           </div>
         </div>

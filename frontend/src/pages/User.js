@@ -44,7 +44,7 @@ const User = () => {
       setError("");
       alert("Account created successfully! Please log in.");
     } catch (err) {
-      setError("Signup failed. Username might already be taken.");
+      setError("Signup failed. Username or email might already be taken.");
     }
   };
 
@@ -117,6 +117,15 @@ const User = () => {
                   value={user.username}
                   onChange={(e) =>
                     setUser({ ...user, username: e.target.value })
+                  }
+                  required
+                />
+                <input
+                  type="email"
+                  placeholder="Email"
+                  value={user.email}
+                  onChange={(e) =>
+                    setUser({ ...user, email: e.target.value })
                   }
                   required
                 />

@@ -13,13 +13,7 @@ CREATE TABLE expenses (
   description TEXT NOT NULL,
   amount FLOAT NOT NULL,
   date DATE NOT NULL,
-  FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
-);
-
--- Notification preferences table
-CREATE TABLE notification_preferences (
-  id SERIAL PRIMARY KEY,
-  user_id INT NOT NULL,
-  notification_period INT NOT NULL, -- Time period in days before expense due date
+  category_id INT NOT NULL,
+  notification_period INT NOT NULL,
   FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
