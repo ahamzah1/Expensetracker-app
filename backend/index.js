@@ -19,7 +19,6 @@ if (!POSTGRES_HOST) {
 }
 
 const POSTGRES_PORT = 5432;
-const POSTGRES_ADDR = `${POSTGRES_HOST}:${POSTGRES_PORT}`;
 
 // PostgreSQL pool setup
 const pool = new Pool({
