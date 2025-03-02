@@ -35,9 +35,9 @@ public class SecurityConfig {
 
         // Allow public access to "/auth/register"
         http.authorizeHttpRequests(request -> request
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Allow preflight requests
                 .requestMatchers("/api/signup").permitAll()
                 .requestMatchers("/api/login").permitAll()// ✅ Allow access
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Allow preflight requests
                 .anyRequest().authenticated());  // 🔒 All other endpoints require authentication
 
         http.httpBasic(Customizer.withDefaults());

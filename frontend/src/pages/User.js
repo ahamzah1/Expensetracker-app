@@ -12,10 +12,8 @@ const User = () => {
 
   useEffect(() => {
     const token = sessionStorage.getItem("token");
-    const savedUser = sessionStorage.getItem("user");
-    if (token && savedUser) {
+    if (token) {
       setIsLoggedIn(true);
-      setUser(JSON.parse(savedUser));
     }
   }, []);
 
@@ -23,11 +21,8 @@ const User = () => {
     e.preventDefault();
     try {
       const response = await axios.post(`${API_URL}/login`, user);
-      const { token } = response.data;
-
-      sessionStorage.setItem("token", token);
-      sessionStorage.setItem("user", JSON.stringify(user));
-
+      // Save only the token to sessionStorage
+      sessionStorage.setItem("token", response.data);
       setIsLoggedIn(true);
       setError("");
       alert("Logged in successfully!");
@@ -51,7 +46,10 @@ const User = () => {
   const handleLogout = () => {
     setIsLoggedIn(false);
     setUser({ username: "", password: "" });
-    sessionStorage.clear();
+
+    // Clear only the token from sessionStorage
+    sessionStorage.removeItem("token");
+
     alert("Logged out successfully!");
   };
 

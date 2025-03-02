@@ -4,14 +4,30 @@ import java.time.LocalDate;
 
 public class ExpenseRequest {
 
+    private Long id;
+
     private String description;
     private double amount;
     private LocalDate date;
     private int categoryId;
     private int notificationPeriod;
 
-    public String getDescription() {
-        return description;
+
+    public ExpenseRequest(Long id, String description, double amount, LocalDate date, int categoryId, int notificationPeriod) {
+        this.id = id;
+        this.description = description;
+        this.amount = amount;
+        this.date = date;
+        this.categoryId = categoryId;
+        this.notificationPeriod = notificationPeriod;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public void setDescription(String description) {
@@ -48,5 +64,9 @@ public class ExpenseRequest {
 
     public void setNotificationPeriod(int notificationPeriod) {
         this.notificationPeriod = notificationPeriod;
+    }
+
+    public String getDescription() {
+        return description;
     }
 }

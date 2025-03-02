@@ -26,7 +26,7 @@ public class Expense {
     private LocalDate date;
 
     @Column(nullable = false)
-    private int category_id; // Store category as a simple string
+    private int category_id;
 
     @Column(name = "notification_period", nullable = false)
     private int notificationPeriod;
@@ -34,13 +34,27 @@ public class Expense {
     public Expense() {
     }
 
-    public Expense(Users user, double amount, int category, int notificationPeriod, LocalDate date, String description) {
+    public Expense(Long id,Users user, double amount, int category, int notificationPeriod, LocalDate date, String description) {
+        this.id = id;
         this.user = user;
         this.amount = amount;
         this.category_id = category;
         this.notificationPeriod = notificationPeriod;
         this.date = date;
         this.description = description;
+    }
+
+    public Expense(Users user, double amount, int categoryId, int notificationPeriod, LocalDate date, String description) {
+        this.user = user;
+        this.description = description;
+        this.amount = amount;
+        this.date = date;
+        this.category_id = categoryId;
+        this.notificationPeriod = notificationPeriod;
+    }
+
+    public Long getId() {
+        return id;
     }
 
     public Users getUser() {
@@ -51,28 +65,20 @@ public class Expense {
         this.user = user;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     public double getAmount() {
         return amount;
     }
 
     public void setAmount(double amount) {
         this.amount = amount;
-    }
-
-    public int getCategory() {
-        return category_id;
-    }
-
-    public void setCategory(int category) {
-        this.category_id = category;
-    }
-
-    public int getNotificationPeriod() {
-        return notificationPeriod;
-    }
-
-    public void setNotificationPeriod(int notificationPeriod) {
-        this.notificationPeriod = notificationPeriod;
     }
 
     public LocalDate getDate() {
@@ -83,11 +89,20 @@ public class Expense {
         this.date = date;
     }
 
-    public String getDescription() {
-        return description;
+    public int getNotificationPeriod() {
+        return notificationPeriod;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setNotificationPeriod(int notificationPeriod) {
+        this.notificationPeriod = notificationPeriod;
+    }
+
+
+    public void setCategory_id(int category_id) {
+        this.category_id = category_id;
+    }
+
+    public int getCategory() {
+        return this.category_id;
     }
 }
