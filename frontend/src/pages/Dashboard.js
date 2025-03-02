@@ -27,7 +27,7 @@ const Dashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
 
-  const API_URL = `${process.env.REACT_APP_BACKEND}/expenses`;
+  const API_URL = "http://localhost:8080/api/expenses";
   const token = sessionStorage.getItem("token");
 
   useEffect(() => {

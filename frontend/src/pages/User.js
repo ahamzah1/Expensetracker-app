@@ -8,7 +8,7 @@ const User = () => {
   const [user, setUser] = useState({ username: "", password: "" });
   const [error, setError] = useState("");
 
-  const API_URL = process.env.REACT_APP_BACKEND;
+  const API_URL = "http://localhost:8080/api";
 
   useEffect(() => {
     const token = sessionStorage.getItem("token");
