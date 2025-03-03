@@ -1,6 +1,8 @@
 package com.example.SpringBootBackend.User;
 
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,12 +20,12 @@ public class UserController {
     }
 
     @PostMapping("/signup")
-    public void handleRegister(@RequestBody Users user){
+    public void handleRegister(@Valid @RequestBody Users user){
         this.userService.handleRegister(user);
     }
 
     @PostMapping("/login")
-    public String handleLogin(@RequestBody Users user){
+    public String handleLogin(@Valid @RequestBody Users user){
         return userService.handleLogin(user);
     }
 

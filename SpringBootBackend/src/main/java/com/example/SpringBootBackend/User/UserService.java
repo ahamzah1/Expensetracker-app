@@ -1,7 +1,9 @@
 package com.example.SpringBootBackend.User;
 
+import com.example.SpringBootBackend.Exceptions.DuplicateUserException;
 import com.example.SpringBootBackend.JWT.JWTService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -26,8 +28,13 @@ public class UserService {
     }
 
     public void handleRegister(Users user) {
+
         user.setPassword(encoder.encode(user.getPassword()));
-        userRepository.save(user);
+        try{
+            userRepository.save(user);
+        } catch (DataIntegrityViolationException e) {
+            throw new DuplicateUserException("User with this username already exists!");
+        }
     }
 
     public String handleLogin(Users user) {
