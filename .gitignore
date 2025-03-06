@@ -1,2 +1,4 @@
 "sendgrid.env" 
 SpringBootBackend/src/main/resources/application.properties
+frontend\package-lock.json
+backend\package-lock.json
