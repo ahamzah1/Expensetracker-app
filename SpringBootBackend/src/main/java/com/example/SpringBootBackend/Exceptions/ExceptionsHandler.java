@@ -1,5 +1,6 @@
 package com.example.SpringBootBackend.Exceptions;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -17,6 +18,12 @@ public class ExceptionsHandler {
     private ResponseEntity<?> handleRecordNotFound(RecordNotFoundException e){
         ErrorResponse res = new ErrorResponse(e.getLocalizedMessage(), Collections.singletonList(e.getMessage()));
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(res);
+    }
+
+    @ExceptionHandler(ExpenseViolationException.class)
+    private ResponseEntity<?> handleExpense(ExpenseViolationException e){
+        ErrorResponse res = new ErrorResponse(e.getLocalizedMessage(), Collections.singletonList(e.getMessage()));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
     }
 
     @ExceptionHandler(DuplicateUserException.class)
@@ -45,6 +52,12 @@ public class ExceptionsHandler {
         );
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<?> handleDataIntegrity(DataIntegrityViolationException e){
+        ErrorResponse errorResponse = new ErrorResponse(e.getMessage(),List.of(e.getMessage()));
+        return  ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
 }

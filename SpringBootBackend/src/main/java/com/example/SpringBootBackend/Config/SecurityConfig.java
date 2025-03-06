@@ -35,10 +35,15 @@ public class SecurityConfig {
 
         // Allow public access to "/auth/register"
         http.authorizeHttpRequests(request -> request
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Allow preflight requests
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                .requestMatchers(
+                        "/swagger-ui/**",
+                        "/v3/api-docs/**",
+                        "/swagger-ui.html"
+                ).permitAll()// Allow preflight requests
                 .requestMatchers("/api/signup").permitAll()
-                .requestMatchers("/api/login").permitAll()// ✅ Allow access
-                .anyRequest().authenticated());  // 🔒 All other endpoints require authentication
+                .requestMatchers("/api/login").permitAll()// Allow access
+                .anyRequest().authenticated());  //All other endpoints require authentication
 
         http.httpBasic(Customizer.withDefaults());
         http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));

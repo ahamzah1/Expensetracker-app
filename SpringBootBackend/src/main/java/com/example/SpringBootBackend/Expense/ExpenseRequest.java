@@ -22,6 +22,18 @@ public class ExpenseRequest {
         this.notificationPeriod = notificationPeriod;
     }
 
+    public ExpenseRequest(Expense expense) {
+        this.id = expense.getId();
+        this.description = expense.getDescription();
+        this.amount = expense.getAmount();
+        this.date = expense.getDate();
+        this.categoryId = expense.getCategory();
+        this.notificationPeriod = expense.getNotificationPeriod();
+    }
+
+    public ExpenseRequest() {
+    }
+
     public Long getId() {
         return id;
     }

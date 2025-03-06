@@ -1,9 +1,11 @@
 package com.example.SpringBootBackend.Expense;
 
+import com.example.SpringBootBackend.Exceptions.ExpenseViolationException;
 import com.example.SpringBootBackend.Exceptions.RecordNotFoundException;
 import com.example.SpringBootBackend.User.Users;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.config.ConfigDataResourceNotFoundException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -31,9 +33,12 @@ public class ExpenseService {
                 expenseRequest.getDescription()
         );
 
-        expenseRepository.save(expense);
-
-        return expenseRequest;
+        try{
+            Expense res = expenseRepository.save(expense);
+            return new ExpenseRequest(res);
+        } catch (DataIntegrityViolationException e) {
+            throw new ExpenseViolationException("Expense is in wrong format! ");
+        }
     }
 
     public List<ExpenseRequest> handleGet(Users user) {

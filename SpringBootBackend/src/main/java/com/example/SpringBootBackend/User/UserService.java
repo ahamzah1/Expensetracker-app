@@ -27,14 +27,10 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public void handleRegister(Users user) {
+    public void handleRegister(Users user) throws DataIntegrityViolationException{
 
         user.setPassword(encoder.encode(user.getPassword()));
-        try{
-            userRepository.save(user);
-        } catch (DataIntegrityViolationException e) {
-            throw new DuplicateUserException("User with this username already exists!");
-        }
+        userRepository.save(user);
     }
 
     public String handleLogin(Users user) {
