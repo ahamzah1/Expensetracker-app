@@ -5,6 +5,8 @@ import com.example.SpringBootBackend.Exceptions.RecordNotFoundException;
 import com.example.SpringBootBackend.User.Users;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.config.ConfigDataResourceNotFoundException;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -22,6 +24,7 @@ public class ExpenseService {
         this.expenseRepository = expenseRepository;
     }
 
+    @CacheEvict(value = "UserCache", key = "#user.username")
     public ExpenseRequest handleAdd(ExpenseRequest expenseRequest, Users user){
 
         Expense expense = new Expense(
@@ -41,6 +44,7 @@ public class ExpenseService {
         }
     }
 
+    @Cacheable(value = "UserCache", key = "#user.username")
     public List<ExpenseRequest> handleGet(Users user) {
 
         return expenseRepository.findByUser(user).stream().map(expense -> new ExpenseRequest(
@@ -48,11 +52,13 @@ public class ExpenseService {
         )).collect(Collectors.toList());
     }
 
+    @CacheEvict(value = "UserCache", key = "#user.username")
     public void handleDelete(Users user, Long id) {
         Expense expense = expenseRepository.findByIdAndUser(id,user).orElseThrow(() -> new RecordNotFoundException("Record not found for ID: " + id));
         expenseRepository.delete(expense);
     }
 
+    @CacheEvict(value = "UserCache", key = "#user.username")
     public ExpenseRequest handleEdit(Users user, long id, ExpenseRequest expenseRequest) {
         Expense existingExpense = expenseRepository.findByIdAndUser(id,user).orElseThrow(() -> new RecordNotFoundException("Record not found for ID: " + id));
         // Update the fields

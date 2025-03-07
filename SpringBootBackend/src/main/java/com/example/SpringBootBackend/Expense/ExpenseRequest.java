@@ -1,8 +1,9 @@
 package com.example.SpringBootBackend.Expense;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 
-public class ExpenseRequest {
+public class ExpenseRequest implements Serializable {
 
     private Long id;
 
