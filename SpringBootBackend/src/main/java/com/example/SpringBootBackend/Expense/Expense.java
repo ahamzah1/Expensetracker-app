@@ -57,6 +57,19 @@ public class Expense {
         return id;
     }
 
+    @Override
+    public String toString() {
+        return "Expense{" +
+                "id=" + id +
+                ", user=" + user +
+                ", description='" + description + '\'' +
+                ", amount=" + amount +
+                ", date=" + date +
+                ", category_id=" + category_id +
+                ", notificationPeriod=" + notificationPeriod +
+                '}';
+    }
+
     public Users getUser() {
         return user;
     }

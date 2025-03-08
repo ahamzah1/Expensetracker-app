@@ -13,6 +13,13 @@ public class ExpenseRequest implements Serializable {
     private int categoryId;
     private int notificationPeriod;
 
+    public ExpenseRequest(String description, double amount, LocalDate date, int categoryId, int notificationPeriod) {
+        this.description = description;
+        this.amount = amount;
+        this.date = date;
+        this.categoryId = categoryId;
+        this.notificationPeriod = notificationPeriod;
+    }
 
     public ExpenseRequest(Long id, String description, double amount, LocalDate date, int categoryId, int notificationPeriod) {
         this.id = id;
