@@ -6,6 +6,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class MyUserDetails implements UserDetails {
     private final Users user;
@@ -20,7 +21,10 @@ public class MyUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("USER"));
+        // Convert the user's roles into GrantedAuthority objects
+        return user.getRoles().stream()
+                .map(role -> new SimpleGrantedAuthority(role.getName())) // Assuming Role has a getName() method
+                .collect(Collectors.toSet());
     }
 
     @Override
